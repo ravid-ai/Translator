@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ravid Translator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        @font-face {
+            font-family: 'Vazir';
+            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir.woff2') format('woff2');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        :root {
+            --primary-color: #4285f4;
+            --primary-dark: #3367d6;
+            --secondary-color: #fbbc05;
+            --text-color: #333;
+            --light-gray: #f5f5f5;
+            --border-color: #ddd;
+            --success-color: #34A853;
+            --error-color: #EA4335;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Vazir', Arial, sans-serif;
+            direction: rtl;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="none"/><path d="M0 50 L100 50 M50 0 L50 100" stroke="rgba(255,255,255,0.1)" stroke-width="2"/></svg>');
+            opacity: 0.5;
+        }
+        
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            flex: 1;
+            padding: 30px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .translator-box {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .translator-box:hover {
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
+        
+        @media (min-width: 992px) {
+            .translator-box {
+                flex-direction: row;
+            }
+        }
+        
+        .language-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .language-label {
+            font-weight: bold;
+            color: var(--primary-dark);
+            font-size: 0.9rem;
+            position: absolute;
+            top: -20px;
+            right: 0;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            position: relative;
+        }
+        
+        .swap-btn {
+            background-color: var(--light-gray);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .swap-btn:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+        
+        .swap-btn svg path {
+            transition: stroke 0.3s ease;
+        }
+        
+        .swap-btn:hover svg path {
+            stroke: white;
+        }
+        
+        .text-area-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .text-area {
+            width: 100%;
+            height: 250px;
+            padding: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            resize: none;
+            font-family: 'Vazir', Arial, sans-serif;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+        
+        .text-area:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            align-items: center;
+        }
+        
+        .btn {
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Vazir', Arial, sans-serif;
+            font-weight: bold;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .translate-btn {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
+        }
+        
+        .translate-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(66, 133, 244, 0.4);
+        }
+        
+        .translate-btn:active {
+            transform: translateY(0);
+        }
+        
+        .clear-btn {
+            background-color: transparent;
+            color: #666;
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+        }
+        
+        .clear-btn:hover {
+            background-color: var(--light-gray);
+            color: var(--text-color);
+        }
+        
+        .copy-btn {
+            background-color: var(--light-gray);
+            color: var(--primary-color);
+            padding: 8px 15px;
+        }
+        
+        .copy-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        select {
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Vazir', Arial, sans-serif;
+            background-color: white;
+            min-width: 150px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%234285f4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 10px center;
+            padding-left: 35px;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            font-size: 1.1rem;
+        }
+        
+        .loader {
+            border: 4px solid rgba(66, 133, 244, 0.2);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .char-count {
+            font-size: 0.85rem;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .char-count.warning {
+            color: #ff9800;
+        }
+        
+        .char-count.danger {
+            color: var(--error-color);
+        }
+        
+        .footer {
+            background-color: #f1f1f1;
+            padding: 25px;
+            text-align: center;
+            color: #666;
+            margin-top: 40px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .footer p {
+            margin: 8px 0;
+        }
+        
+        .footer .social-links {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .footer .social-links a {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .footer .social-links a:hover {
+            color: var(--primary-dark);
+            transform: translateY(-3px);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background-color: var(--success-color);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 6px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+        
+        .notification.error {
+            background-color: var(--error-color);
+        }
+        
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        
+        .language-feature {
+            display: flex;
+            gap: 10px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .feature-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            width: 280px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            background-color: rgba(66, 133, 244, 0.1);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        
+        .feature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+        
+        .feature-desc {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        .target-container {
+            position: relative;
+        }
+        
+        .action-buttons {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: 4px;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .history-panel {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .history-title {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        .history-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .history-item:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .history-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+        
+        .history-langs {
+            color: var(--primary-color);
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(30deg);
+        }
+        
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+        
+        body.dark-mode .translator-box,
+        body.dark-mode .feature-item,
+        body.dark-mode .history-panel {
+            background-color: #2d2d2d;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .text-area {
+            background-color: #3a3a3a;
+            border-color: #444;
+            color: #f0f0f0;
+        }
+        
+        body.dark-mode select {
+            background-color: #3a3a3a;
+            border-color: #444;
+            color: #f0f0f0;
+        }
+        
+        body.dark-mode .footer {
+            background-color: #2d2d2d;
+            border-top-color: #444;
+        }
+        
+        body.dark-mode .feature-icon {
+            background-color: rgba(66, 133, 244, 0.2);
+        }
+        
+        body.dark-mode .clear-btn {
+            color: #ccc;
+            border-color: #444;
+        }
+        
+        body.dark-mode .history-list {
+            border-color: #444;
+        }
+        
+        body.dark-mode .history-item {
+            border-color: #444;
+        }
+        
+        body.dark-mode .history-item:hover {
+            background-color: #3a3a3a;
+        }
+        
+        /* Voice input/output buttons */
+        .voice-btn {
+            background-color: var(--light-gray);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--primary-color);
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+        
+        .voice-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .voice-btn.recording {
+            background-color: var(--error-color);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+            
+            .translator-box {
+                padding: 15px;
+            }
+            
+            .text-area {
+                height: 200px;
+                padding: 15px;
+            }
+            
+            .language-feature {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .feature-item {
+                width: 100%;
+                max-width: 350px;
+            }
+            
+            .language-selector {
+                flex-direction: column;
+                padding: 20px 0;
+            }
+            
+            .swap-btn {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" title="تغییر تم">
+        <i class="fas fa-moon"></i>
+    </button>
+    
+    <div class="header">
+        <h1>Ravid Translator</h1>
+        <p>بهترین مترجم زبان ، معنی و توضیح اصلاحات  و...</p>
+    </div>
+    
+    <div class="container">
+        <div class="translator-box">
+            <div class="text-area-container">
+                <div class="language-panel">
+                    <div class="language-label">زبان مبدأ</div>
+                    <select id="source-language">
+                        <option value="auto">تشخیص خودکار زبان</option>
+                        <option value="fa">فارسی</option>
+                        <option value="en">انگلیسی</option>
+                        <option value="ar">عربی</option>
+                        <option value="fr">فرانسوی</option>
+                        <option value="de">آلمانی</option>
+                        <option value="es">اسپانیایی</option>
+                        <option value="ru">روسی</option>
+                        <option value="zh">چینی</option>
+                        <option value="ja">ژاپنی</option>
+                        <option value="ko">کره‌ای</option>
+                        <option value="tr">ترکی</option>
+                        <option value="it">ایتالیایی</option>
+                        <option value="pt">پرتغالی</option>
+                        <option value="hi">هندی</option>
+                    </select>
+                    <button class="voice-btn" id="source-voice-btn" title="ورودی صوتی">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+                <textarea id="source-text" class="text-area" placeholder="متن خود را وارد کنید یا دکمه میکروفن را برای ورودی صوتی انتخاب کنید..."></textarea>
+                <div class="controls">
+                    <button class="btn clear-btn" onclick="clearSourceText()">
+                        <i class="fas fa-trash"></i>
+                        پاک کردن
+                    </button>
+                    <span id="source-char-count" class="char-count">0 / 5000</span>
+                </div>
+            </div>
+            
+            <div class="language-selector">
+                <button class="swap-btn" onclick="swapLanguages()" title="جابجایی زبان‌ها">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 3L19 6L16 9" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M5 11V6H19" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M8 21L5 18L8 15" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 13V18H5" stroke="#4285f4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="text-area-container target-container">
+                <div class="language-panel">
+                    <div class="language-label">زبان مقصد</div>
+                    <select id="target-language">
+                        <option value="en">انگلیسی</option>
+                        <option value="fa">فارسی</option>
+                        <option value="ar">عربی</option>
+                        <option value="fr">فرانسوی</option>
+                        <option value="de">آلمانی</option>
+                        <option value="es">اسپانیایی</option>
+                        <option value="ru">روسی</option>
+                        <option value="zh">چینی</option>
+                        <option value="ja">ژاپنی</option>
+                        <option value="ko">کره‌ای</option>
+                        <option value="tr">ترکی</option>
+                        <option value="it">ایتالیایی</option>
+                        <option value="pt">پرتغالی</option>
+                        <option value="hi">هندی</option>
+                    </select>
+                    <button class="voice-btn" id="target-voice-btn" title="تبدیل به گفتار">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                <textarea id="target-text" class="text-area" placeholder="ترجمه در اینجا نمایش داده می‌شود..." readonly></textarea>
+                <div class="action-buttons">
+                    <button class="action-btn" id="copy-btn" title="کپی ترجمه">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="action-btn" id="share-btn" title="اشتراک‌گذاری">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="action-btn" id="download-btn" title="دانلود متن">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+                <div class="controls">
+                    <button class="btn copy-btn" onclick="copyTranslation()">
+                        <i class="fas fa-copy"></i>
+                        کپی ترجمه
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading-indicator">
+            <div class="loader"></div>
+            <p>درحال ترجمه...</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 25px;">
+            <button class="btn translate-btn" onclick="translateText()">
+                <i class="fas fa-language"></i>
+                ترجمه کن
+            </button>
+        </div>
+        
+        <div class="language-feature">
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="feature-title">ترجمه هوشمند</div>
+                <div class="feature-desc">با استفاده از هوش مصنوعی gemini  ، متن‌ها با دقت بالا و با حفظ مفهوم و لحن اصلی ترجمه میشه.</div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-languages"></i>
+                </div>
+                <div class="feature-title">پشتیبانی از ۱۵ زبان</div>
+                <div class="feature-desc">پشتیبانی از زبان‌های مختلف جهان از جمله فارسی، انگلیسی، عربی، فرانسوی و بسیاری دیگر.</div>
+            </div>
+            
+            <div class="feature-item">
+                <div class="feature-icon">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <div class="feature-title">ورودی و خروجی صوتی</div>
+                <div class="feature-desc">امکان استفاده از ورودی صوتی برای ترجمه و تبدیل متن ترجمه شده به گفتار.</div>
+            </div>
+        </div>
+        
+        <div class="history-panel">
+            <div class="history-title">
+                <i class="fas fa-history"></i>
+                تاریخچه ترجمه‌ها
+            </div>
+            <div class="history-list" id="history-list">
+                <!-- تاریخچه ترجمه‌ها اینجا نمایش داده می‌شود -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-text">متن با موفقیت کپی شد!</span>
+    </div>
+    
+    <div class="footer">
+        <p>طراحی شده توسط Ravid</p>
+        <p>© 2025 - تمامی حقوق محفوظ است</p>
+        <div class="social-links">
+            <a href="https://t.me/raviiiid" title="تلگرام"><i class="fab fa-telegram"></i></a>
+            <a href="#" title="توییتر"><i class="fab fa-twitter"></i></a>
+        </div>
+    </div>
+
+    <script>
+        // تنظیمات اولیه
+document.addEventListener('DOMContentLoaded', function() {
+    // تنظیم حالت پیش‌فرض
+    loadTheme();
+    loadHistory();
+    
+    // تنظیم رویدادها
+    document.getElementById('source-text').addEventListener('input', handleSourceTextInput);
+    document.getElementById('copy-btn').addEventListener('click', copyTranslation);
+    document.getElementById('share-btn').addEventListener('click', shareTranslation);
+    document.getElementById('download-btn').addEventListener('click', downloadTranslation);
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    document.getElementById('source-voice-btn').addEventListener('click', startVoiceInput);
+    document.getElementById('target-voice-btn').addEventListener('click', speakTranslation);
+    
+    // تنظیم کلید میانبر برای ترجمه (Ctrl+Enter)
+    document.getElementById('source-text').addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            translateText();
+        }
+    });
+});
+
+// مدیریت متن ورودی
+function handleSourceTextInput() {
+    const text = this.value;
+    const charCount = text.length;
+    const charCountElement = document.getElementById('source-char-count');
+    charCountElement.textContent = `${charCount} / 5000`;
+    
+    // تغییر رنگ شمارنده کاراکتر بر اساس میزان استفاده
+    if (charCount > 4500) {
+        charCountElement.className = 'char-count danger';
+    } else if (charCount > 4000) {
+        charCountElement.className = 'char-count warning';
+    } else {
+        charCountElement.className = 'char-count';
+    }
+    
+    // محدود کردن تعداد کاراکترها
+    if (charCount > 5000) {
+        this.value = text.substring(0, 5000);
+        charCountElement.textContent = `5000 / 5000`;
+    }
+    
+    // ترجمه خودکار با تأخیر اگر گزینه فعال باشد
+    if (localStorage.getItem('autoTranslate') === 'true') {
+        clearTimeout(this.translateTimeout);
+        this.translateTimeout = setTimeout(() => {
+            if (text.trim().length > 3) {
+                translateText();
+            }
+        }, 1000);
+    }
+}
+
+// پاک کردن متن ورودی
+function clearSourceText() {
+    document.getElementById('source-text').value = '';
+    document.getElementById('source-char-count').textContent = '0 / 5000';
+    document.getElementById('source-char-count').className = 'char-count';
+}
+
+// کپی کردن ترجمه
+function copyTranslation() {
+    const targetText = document.getElementById('target-text');
+    const text = targetText.value.trim();
+    
+    if (!text) {
+        showNotification('متنی برای کپی وجود ندارد', true);
+        return;
+    }
+    
+    navigator.clipboard.writeText(text)
+        .then(() => {
+            showNotification('متن ترجمه شده با موفقیت کپی شد');
+        })
+        .catch(() => {
+            // روش جایگزین برای مرورگرهای قدیمی
+            targetText.select();
+            document.execCommand('copy');
+            showNotification('متن ترجمه شده با موفقیت کپی شد');
+        });
+}
+
+// اشتراک‌گذاری ترجمه
+function shareTranslation() {
+    const text = document.getElementById('target-text').value.trim();
+    
+    if (!text) {
+        showNotification('متنی برای اشتراک‌گذاری وجود ندارد', true);
+        return;
+    }
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'ترجمه از مترجم هوشمند جمینی',
+            text: text
+        })
+        .then(() => {
+            console.log('اشتراک‌گذاری موفق');
+        })
+        .catch((error) => {
+            console.error('خطا در اشتراک‌گذاری:', error);
+            showNotification('خطا در اشتراک‌گذاری', true);
+        });
+    } else {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                showNotification('متن کپی شد. حالا می‌توانید آن را به اشتراک بگذارید');
+            })
+            .catch(() => {
+                showNotification('امکان اشتراک‌گذاری در این مرورگر وجود ندارد', true);
+            });
+    }
+}
+
+// دانلود ترجمه به صورت فایل متنی
+function downloadTranslation() {
+    const text = document.getElementById('target-text').value.trim();
+    
+    if (!text) {
+        showNotification('متنی برای دانلود وجود ندارد', true);
+        return;
+    }
+    
+    const sourceLanguage = document.getElementById('source-language').options[document.getElementById('source-language').selectedIndex].text;
+    const targetLanguage = document.getElementById('target-language').options[document.getElementById('target-language').selectedIndex].text;
+    const filename = `ترجمه-${sourceLanguage}-به-${targetLanguage}.txt`;
+    
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    
+    if (navigator.msSaveBlob) {
+        // برای مرورگر IE
+        navigator.msSaveBlob(blob, filename);
+    } else {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(link.href);
+    }
+    
+    showNotification('فایل ترجمه با موفقیت دانلود شد');
+}
+
+// جابجایی زبان‌ها
+function swapLanguages() {
+    const sourceLanguage = document.getElementById('source-language');
+    const targetLanguage = document.getElementById('target-language');
+    const sourceText = document.getElementById('source-text');
+    const targetText = document.getElementById('target-text');
+    
+    // اگر زبان مبدأ تشخیص خودکار باشد، امکان جابجایی نیست
+    if (sourceLanguage.value === 'auto' && targetText.value.trim()) {
+        showNotification('در حالت تشخیص خودکار زبان، امکان جابجایی وجود ندارد', true);
+        return;
+    }
+    
+    // عوض کردن زبان‌ها
+    const tempLanguage = sourceLanguage.value;
+    sourceLanguage.value = targetLanguage.value;
+    targetLanguage.value = tempLanguage;
+    
+    // عوض کردن متن‌ها
+    const tempText = sourceText.value;
+    sourceText.value = targetText.value;
+    targetText.value = tempText;
+    
+    // به‌روزرسانی شمارش کاراکترها
+    document.getElementById('source-char-count').textContent = `${sourceText.value.length} / 5000`;
+    
+    // انیمیشن چرخش برای دکمه جابجایی
+    const swapBtn = document.querySelector('.swap-btn');
+    swapBtn.style.transform = 'rotate(180deg)';
+    setTimeout(() => {
+        swapBtn.style.transform = 'rotate(0deg)';
+    }, 300);
+}
+
+// ترجمه متن
+async function translateText() {
+    const sourceText = document.getElementById('source-text').value.trim();
+    const sourceLanguage = document.getElementById('source-language').value;
+    const targetLanguage = document.getElementById('target-language').value;
+    
+    if (!sourceText) {
+        showNotification('لطفاً متنی برای ترجمه وارد کنید', true);
+        return;
+    }
+    
+    if (sourceLanguage === targetLanguage && sourceLanguage !== 'auto') {
+        showNotification('زبان مبدأ و مقصد یکسان است', true);
+        return;
+    }
+    
+    // نمایش نشانگر بارگیری
+    document.getElementById('loading-indicator').style.display = 'block';
+    
+    try {
+        // فراخوانی API جمینی
+        const translation = await callGeminiAPI(sourceText, sourceLanguage, targetLanguage);
+        document.getElementById('target-text').value = translation;
+        
+        // افزودن به تاریخچه
+        addToHistory(sourceText, translation, sourceLanguage, targetLanguage);
+        
+    } catch (error) {
+        console.error('خطا در ترجمه:', error);
+        showNotification('خطایی در ترجمه رخ داد. لطفاً دوباره تلاش کنید.', true);
+        document.getElementById('target-text').value = '';
+    } finally {
+        // مخفی کردن نشانگر بارگیری
+        document.getElementById('loading-indicator').style.display = 'none';
+    }
+}
+
+// فراخوانی API جمینی
+async function callGeminiAPI(text, sourceLanguage, targetLanguage) {
+    const API_KEY = 'AIzaSyDhk6OCP9RFD6B9lWej-VB0wRgBaLB72mY';
+    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent';
+    
+    const sourceLangName = sourceLanguage === 'auto' ? 'detected language' : getLanguageName(sourceLanguage);
+    const targetLangName = getLanguageName(targetLanguage);
+    
+    const prompt = `Translate the following text from ${sourceLangName} to ${targetLangName}. 
+IMPORTANT: 
+1. Analyze the tone of the original text (e.g., formal, informal, colloquial, friendly, technical) and preserve that same tone in the translated output. If the original text is formal, translate it formally. If it's informal or colloquial, translate it informally or colloquially.
+2. If the text contains idioms, specific cultural references, or complex phrases that might benefit from a brief explanation for clarity *within the translation context*, provide this explanation *concisely* and **strictly in the target language (${targetLangName})**. Do **NOT** add explanations in English or any language other than the specified target language. Just provide the translation and the explanation (if absolutely necessary) in ${targetLangName}.
+3. Do not include any metadata, notes or comments about the translation process. Only return the translated text.
+
+Original Text:
+${text}`;
+    
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: prompt
+                        }
+                    ]
+                }
+            ],
+            generationConfig: {
+                temperature: 0.2,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 1024
+            }
+        })
+    });
+    
+    const data = await response.json();
+    
+    if (data.candidates && data.candidates.length > 0 && data.candidates[0].content.parts.length > 0) {
+        return data.candidates[0].content.parts[0].text;
+    } else {
+        console.error('API Response:', data);
+        throw new Error('دریافت ترجمه از API ناموفق بود');
+    }
+}
+
+// دریافت نام کامل زبان از کد آن
+function getLanguageName(langCode) {
+    const languages = {
+        'auto': 'detected language',
+        'fa': 'Persian',
+        'en': 'English',
+        'ar': 'Arabic',
+        'fr': 'French',
+        'de': 'German',
+        'es': 'Spanish',
+        'ru': 'Russian',
+        'zh': 'Chinese',
+        'ja': 'Japanese',
+        'ko': 'Korean',
+        'tr': 'Turkish',
+        'it': 'Italian',
+        'pt': 'Portuguese',
+        'hi': 'Hindi'
+    };
+    
+    return languages[langCode] || langCode;
+}
+
+// نمایش اعلان‌ها
+function showNotification(message, isError = false) {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notification-text');
+    
+    // تنظیم آیکون و کلاس متناسب با نوع اعلان
+    const icon = notification.querySelector('i');
+    if (isError) {
+        notification.classList.add('error');
+        icon.className = 'fas fa-exclamation-circle';
+    } else {
+        notification.classList.remove('error');
+        icon.className = 'fas fa-check-circle';
+    }
+    
+    notificationText.textContent = message;
+    notification.classList.add('show');
+    
+    // مخفی کردن اعلان پس از چند ثانیه
+    setTimeout(() => {
+        notification.classList.remove('show');
+    }, 3000);
+}
+
+// تغییر تم (روشن/تاریک)
+function toggleTheme() {
+    const body = document.body;
+    const themeIcon = document.querySelector('.theme-toggle i');
+    
+    if (body.classList.contains('dark-mode')) {
+        body.classList.remove('dark-mode');
+        themeIcon.className = 'fas fa-moon';
+        localStorage.setItem('theme', 'light');
+    } else {
+        body.classList.add('dark-mode');
+        themeIcon.className = 'fas fa-sun';
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+// بارگذاری تم ذخیره شده
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    const themeIcon = document.querySelector('.theme-toggle i');
+    
+    if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        themeIcon.className = 'fas fa-sun';
+    } else {
+        themeIcon.className = 'fas fa-moon';
+    }
+}
+
+// افزودن به تاریخچه ترجمه‌ها
+function addToHistory(sourceText, translatedText, sourceLang, targetLang) {
+    // محدود کردن متن‌های طولانی برای نمایش در تاریخچه
+    const shortenedSourceText = sourceText.length > 50 ? sourceText.substring(0, 50) + '...' : sourceText;
+    
+    // ساخت شیء تاریخچه جدید
+    const historyItem = {
+        id: Date.now(),
+        sourceText: sourceText,
+        translatedText: translatedText,
+        sourceLang: sourceLang,
+        targetLang: targetLang,
+        timestamp: new Date().toISOString()
+    };
+    
+    // دریافت تاریخچه‌های قبلی
+    let history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+    
+    // افزودن مورد جدید به ابتدای آرایه
+    history.unshift(historyItem);
+    
+    // محدود کردن تعداد موارد تاریخچه به 20 مورد
+    if (history.length > 20) {
+        history = history.slice(0, 20);
+    }
+    
+    // ذخیره تاریخچه جدید
+    localStorage.setItem('translationHistory', JSON.stringify(history));
+    
+    // به‌روزرسانی نمایش تاریخچه
+    updateHistoryDisplay();
+}
+
+// به‌روزرسانی نمایش تاریخچه
+function updateHistoryDisplay() {
+    const historyList = document.getElementById('history-list');
+    const history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+    
+    // پاک کردن محتوای قبلی
+    historyList.innerHTML = '';
+    
+    if (history.length === 0) {
+        historyList.innerHTML = '<div style="padding: 15px; text-align: center; color: #666;">تاریخچه‌ای موجود نیست</div>';
+        return;
+    }
+    
+    // افزودن موارد تاریخچه به لیست
+    history.forEach(item => {
+        const shortenedText = item.sourceText.length > 50 ? item.sourceText.substring(0, 50) + '...' : item.sourceText;
+        const sourceLangName = item.sourceLang === 'auto' ? 'تشخیص خودکار' : getLanguageNameFa(item.sourceLang);
+        const targetLangName = getLanguageNameFa(item.targetLang);
+        const time = new Date(item.timestamp).toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+        const date = new Date(item.timestamp).toLocaleDateString('fa-IR', { month: 'short', day: 'numeric' });
+        
+        const historyItemElement = document.createElement('div');
+        historyItemElement.className = 'history-item';
+        historyItemElement.innerHTML = `
+            <div class="history-text">${shortenedText}</div>
+            <div class="history-langs">${sourceLangName} → ${targetLangName}</div>
+            <div style="color: #666; font-size: 0.8rem;">${date} ${time}</div>
+        `;
+        
+        // افزودن رویداد کلیک برای بازیابی ترجمه
+        historyItemElement.addEventListener('click', () => {
+            restoreTranslation(item);
+        });
+        
+        historyList.appendChild(historyItemElement);
+    });
+}
+
+// بازیابی ترجمه از تاریخچه
+function restoreTranslation(item) {
+    document.getElementById('source-language').value = item.sourceLang;
+    document.getElementById('target-language').value = item.targetLang;
+    document.getElementById('source-text').value = item.sourceText;
+    document.getElementById('target-text').value = item.translatedText;
+    document.getElementById('source-char-count').textContent = `${item.sourceText.length} / 5000`;
+    
+    showNotification('ترجمه از تاریخچه بازیابی شد');
+}
+
+// بارگذاری تاریخچه
+function loadHistory() {
+    updateHistoryDisplay();
+}
+
+// دریافت نام فارسی زبان از کد آن
+function getLanguageNameFa(langCode) {
+    const languages = {
+        'auto': 'تشخیص خودکار',
+        'fa': 'فارسی',
+        'en': 'انگلیسی',
+        'ar': 'عربی',
+        'fr': 'فرانسوی',
+        'de': 'آلمانی',
+        'es': 'اسپانیایی',
+        'ru': 'روسی',
+        'zh': 'چینی',
+        'ja': 'ژاپنی',
+        'ko': 'کره‌ای',
+        'tr': 'ترکی',
+        'it': 'ایتالیایی',
+        'pt': 'پرتغالی',
+        'hi': 'هندی'
+    };
+    
+    return languages[langCode] || langCode;
+}
+
+// ورودی صوتی (تبدیل گفتار به متن)
+function startVoiceInput() {
+    // بررسی پشتیبانی مرورگر از تشخیص صدا
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        showNotification('مرورگر شما از تشخیص گفتار پشتیبانی نمی‌کند', true);
+        return;
+    }
+    
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    
+    // تنظیم زبان تشخیص گفتار
+    const sourceLang = document.getElementById('source-language').value;
+    if (sourceLang !== 'auto') {
+        recognition.lang = sourceLang === 'fa' ? 'fa-IR' : sourceLang === 'en' ? 'en-US' : sourceLang;
+    }
+    
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    
+    const voiceButton = document.getElementById('source-voice-btn');
+    voiceButton.classList.add('recording');
+    voiceButton.querySelector('i').className = 'fas fa-stop';
+    
+    recognition.start();
+    
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        const sourceText = document.getElementById('source-text');
+        sourceText.value = transcript;
+        document.getElementById('source-char-count').textContent = `${transcript.length} / 5000`;
+        
+        // ترجمه خودکار پس از تشخیص گفتار
+        setTimeout(() => {
+            translateText();
+        }, 500);
+    };
+    
+    recognition.onerror = function(event) {
+        console.error('خطا در تشخیص گفتار:', event.error);
+        showNotification('خطا در تشخیص گفتار: ' + event.error, true);
+        resetVoiceButton();
+    };
+    
+    recognition.onend = function() {
+        resetVoiceButton();
+    };
+    
+    function resetVoiceButton() {
+        voiceButton.classList.remove('recording');
+        voiceButton.querySelector('i').className = 'fas fa-microphone';
+    }
+}
+
+// تبدیل متن به گفتار
+function speakTranslation() {
+    const text = document.getElementById('target-text').value.trim();
+    
+    if (!text) {
+        showNotification('متنی برای تبدیل به گفتار وجود ندارد', true);
+        return;
+    }
+    
+    if (!('speechSynthesis' in window)) {
+        showNotification('مرورگر شما از تبدیل متن به گفتار پشتیبانی نمی‌کند', true);
+        return;
+    }
+    
+    // توقف گفتار فعلی اگر در حال پخش است
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        return;
+    }
+    
+    const targetLang = document.getElementById('target-language').value;
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // تنظیم زبان گفتار
+    switch (targetLang) {
+        case 'fa':
+            utterance.lang = 'fa-IR';
+            break;
+        case 'en':
+            utterance.lang = 'en-US';
+            break;
+        case 'ar':
+            utterance.lang = 'ar-SA';
+            break;
+        case 'fr':
+            utterance.lang = 'fr-FR';
+            break;
+        case 'de':
+            utterance.lang = 'de-DE';
+            break;
+        case 'es':
+            utterance.lang = 'es-ES';
+            break;
+        case 'ru':
+            utterance.lang = 'ru-RU';
+            break;
+        case 'zh':
+            utterance.lang = 'zh-CN';
+            break;
+        case 'ja':
+            utterance.lang = 'ja-JP';
+            break;
+        case 'ko':
+            utterance.lang = 'ko-KR';
+            break;
+        default:
+            utterance.lang = 'en-US';
+    }
+    
+    // تنظیم سرعت و صدا
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    
+    const voiceButton = document.getElementById('target-voice-btn');
+    voiceButton.innerHTML = '<i class="fas fa-volume-mute"></i>';
+    
+    utterance.onend = function() {
+        voiceButton.innerHTML = '<i class="fas fa-volume-up"></i>';
+    };
+    
+    window.speechSynthesis.speak(utterance);
+}
+</script>
+</body>
+</html>
